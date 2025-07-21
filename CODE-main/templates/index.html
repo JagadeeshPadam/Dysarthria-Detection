@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Federated Learning Speech Recognition</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        #upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        select, input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 10px rgba(74,144,226,0.2);
+        }
+
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background-color: #357abd;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(74,144,226,0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        #prediction {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4a90e2;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Federated Learning Dysarthric Speech Recognition</h1>
+        <form id="upload-form">
+            <label>Select Dataset:</label>
+            <select name="dataset" id="dataset">
+                <option value="torgo">Torgo</option>
+                <option value="uaspeech">UASpeech</option>
+            </select>
+
+            <input type="file" id="audio" name="audio" accept="audio/*">
+            <button type="submit">
+                Upload & Predict
+                <div class="loader"></div>
+            </button>
+        </form>
+        <p id="prediction"></p>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Show loader and disable button
+            const loader = document.querySelector('.loader');
+            const button = document.querySelector('button');
+            const predictionEl = document.getElementById("prediction");
+            
+            loader.style.display = 'inline-block';
+            button.disabled = true;
+            predictionEl.innerText = '';
+
+            var formData = new FormData();
+            formData.append("dataset", document.getElementById("dataset").value);
+            formData.append("audio", document.getElementById("audio").files[0]);
+
+            // Simulate 3-second delay
+            setTimeout(() => {
+                fetch('/predict', { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(data => {
+                        predictionEl.innerText = "Prediction: " + data.prediction;
+                        loader.style.display = 'none';
+                        button.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        predictionEl.innerText = "An error occurred";
+                        loader.style.display = 'none';
+                        button.disabled = false;
+                    });
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
